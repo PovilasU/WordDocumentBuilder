@@ -20,7 +20,8 @@ namespace WordDocumentBuilder.Models
         public DocumentModel(string templatePath)
         {
             Word._Application oWord = new Word.Application();
-            oWord.Visible = true;
+         //   oWord.Visible = true;
+            oWord.Visible = false;
 
             object oTemplate = templatePath;
             Document = oWord.Documents.Add(ref oTemplate, ref oMissing, ref oMissing, ref oMissing);
