@@ -49,15 +49,22 @@ namespace WordDocumentBuilder
         public void CreateAndSaveDocument()
         {
             DocumentModel model = new DocumentModel("C:\\templates\\template1_4.dot");
-
+/*
             model.SetBookmarkText("oBookMarkHeader", "Sky Walker");
             model.AddStyledParagraph("Heading 2Foo bar234242423");
             model.AddStyledParagraph("?@@@@@This is a sentence of normal text. Now here is a table:", "boo", 24);
             model.CreateTable(13, 5);
             model.InsertPageBreak();
             model.InsertFileAtEnd(@"C:\Projects\C#\WordDocumentBuilder\word_documents\doc2.doc");
-            model.UpdateTableOfContents();
-            model.SaveDocument(@"C:\Projects\C#\WordDocumentBuilder\word_documents\newBar6.doc");
+            model.UpdateTableOfContents();*/
+
+            model.AddStyledListParagraph("aaa");
+           // model.SaveDocument(@"C:\Projects\C#\WordDocumentBuilder\word_documents\newBar6.doc");
+
+
+      
+
+
 
             this.Close();
         }

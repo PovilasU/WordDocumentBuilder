@@ -2,7 +2,10 @@ using System;
 using System.Windows.Forms;
 using Word = Microsoft.Office.Interop.Word;
 using Microsoft.Office.Interop.Word;
-
+using System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
+using System.Diagnostics;
+using System.Collections.Generic;
 
 
 namespace WordDocumentBuilder.Models
@@ -63,6 +66,248 @@ namespace WordDocumentBuilder.Models
 
         public Word.Paragraph AddStyledParagraph(string text, string styleName = "Heading 1", float spaceAfter = 6)
         {
+            object oEndOfDoc = "\\endofdoc";
+            Word.Paragraph oPara;
+            object oRng = Document.Bookmarks.get_Item(ref oEndOfDoc).Range;
+            oPara = Document.Content.Paragraphs.Add(ref oRng);
+            oPara.Range.Text = text;
+            oPara.Format.SpaceAfter = spaceAfter;
+
+            object oStyle = styleName;
+            oPara.Range.set_Style(ref oStyle);
+            oPara.Range.InsertParagraphAfter();
+
+            return oPara;
+        }
+
+
+        public List<string> ProcessString(ref string str, ref string[] strings)
+        {
+            List<string> stringsList = new List<string>();
+            Match match = Regex.Match(str, @"\n(?<charAfterNewLine>.)");
+
+            if (match.Success)
+            {
+                char charAfterNewLine = match.Groups["charAfterNewLine"].Value[0];
+                if (char.IsLower(charAfterNewLine))
+                {
+                  //  Console.WriteLine("The character after '\\n' is lower case.");
+                    str = str.Replace("\n", " ");
+                 //   Debug.WriteLine($"Replaced '\\n' with ' ' in s1. New s1: '{str}'");
+                    stringsList.Add(str);
+                }
+                else if (char.IsUpper(charAfterNewLine))
+                {
+                   // Console.WriteLine("The character after '\\n' is upper case.");
+                    MatchCollection matches = Regex.Matches(str, @"\n(?<charAfterNewLine>[A-Z].*?)");
+
+                    foreach (Match match1 in matches)
+                    {
+                        if (char.IsUpper(charAfterNewLine))
+                        {
+                            string substringBeforeNewLine = str.Substring(0, match1.Index);
+                            Array.Resize(ref strings, strings.Length + 1); // Resize the array
+                            strings[strings.Length - 1] = substringBeforeNewLine; // Add the substring to the array
+                            stringsList.Add(substringBeforeNewLine);
+
+                            if (match1.Index + 1 < str.Length)
+                            {
+                                str = str.Substring(match1.Index + 1); // Update str to be the remaining substring
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine("No '\\n' found in the string.");
+            }
+
+            return stringsList;
+        }
+
+
+        public Word.Paragraph AddStyledListParagraph(string text, string styleName = "Normal", float spaceAfter = 6)
+        {
+           // string[] strings;
+
+            string s1 = "Upgrade to a bla bla operating\nsystem or whatever";
+         //   s1 = Regex.Replace(s1, @"\n(?=[a-z])", " ");
+
+           //  strings = new string[] { s1 };
+
+            string s2 = "Please1 update to OS 9.3.4 or above\nPlease2 do what I say 4.5.6 or above\nPlease3 update to OS 8.9.9 or above";
+
+
+            //string s1 = "Upgrade to a bla bla operating\nsystem or whatever";
+            string[] strings = new string[0]; // Initialize the array
+
+            string str = s2;
+            //List<string> stringsList = new List<string>();
+            List<string> stringsList = ProcessString(ref str, ref strings);
+
+            /*
+                        Match match = Regex.Match(str, @"\n(?<charAfterNewLine>.)");
+
+                             if (match.Success)
+                             {
+                                 char charAfterNewLine = match.Groups["charAfterNewLine"].Value[0];
+                                 if (char.IsLower(charAfterNewLine))
+                                 {
+                                     Console.WriteLine("The character after '\\n' is lower case.");
+                                     str = str.Replace("\n", " ");
+                                     Debug.WriteLine($"Replaced '\\n' with ' ' in s1. New s1: '{str}'");
+                                stringsList.Add(str);
+                            }
+                                 else if (char.IsUpper(charAfterNewLine))
+                                 {
+                                     Console.WriteLine("The character after '\\n' is upper case.");
+                                MatchCollection matches = Regex.Matches(str, @"\n(?<charAfterNewLine>[A-Z].*?)");
+
+                                int count = 0;
+
+                                foreach (Match match1 in matches)
+                                {
+                                   // char charAfterNewLine = match1.Groups["charAfterNewLine"].Value[0];
+                                    if (char.IsUpper(charAfterNewLine))
+                                    {
+                                        string substringBeforeNewLine = str.Substring(0, match1.Index);
+                                        Array.Resize(ref strings, strings.Length + 1); // Resize the array
+                                        strings[strings.Length - 1] = substringBeforeNewLine; // Add the substring to the array
+                                                                                              //Debug.WriteLine($"Added '{substringBeforeNewLine}' to the array.");
+                                                                                              //stringsList
+                                        stringsList.Add(substringBeforeNewLine);
+                                        count++;
+                                        //  str = str.Substring(match.Index + 1); // Update str to be the remaining substring
+                                        if (match1.Index + 1 < str.Length)
+                                        {
+                                            str = str.Substring(match1.Index + 1); // Update str to be the remaining substring
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        //Debug.WriteLine("what is here");
+                                        // Debug.WriteLine(str.Substring(0, match.Index));
+                                    }
+                                }
+                            }
+                             }
+                             else
+                             {
+                                 Console.WriteLine("No '\\n' found in the string.");
+                             }*/
+
+
+
+            
+
+
+            foreach (string item in stringsList)
+            {
+                 Debug.WriteLine(item); //does the job
+            }
+
+
+            //using System.Text.RegularExpressions;
+
+            //string s1 = "Upgrade to a bla bla operating\nsystem or whatever";
+            /*            string[] strings = new string[0]; // Initialize the array
+
+                        string str = s1;
+                        List<string> stringsList = new List<string>();*/
+
+
+            //string str = s2;
+
+            // Match all occurrences of substrings starting with a capital letter after "\n"
+            /*        MatchCollection matches = Regex.Matches(str, @"\n(?<charAfterNewLine>[A-Z].*?)");
+
+                    int count = 0;
+
+                    foreach (Match match1 in matches)
+                    {
+                        char charAfterNewLine = match1.Groups["charAfterNewLine"].Value[0];
+                        if (char.IsUpper(charAfterNewLine))
+                        {
+                            string substringBeforeNewLine = str.Substring(0, match1.Index);
+                            Array.Resize(ref strings, strings.Length + 1); // Resize the array
+                            strings[strings.Length - 1] = substringBeforeNewLine; // Add the substring to the array
+                                                                                  //Debug.WriteLine($"Added '{substringBeforeNewLine}' to the array.");
+                                                                                  //stringsList
+                            stringsList.Add(substringBeforeNewLine);
+                            count++;
+                            //  str = str.Substring(match.Index + 1); // Update str to be the remaining substring
+                            if (match1.Index + 1 < str.Length)
+                            {
+                                str = str.Substring(match1.Index + 1); // Update str to be the remaining substring
+                            }
+
+                        }
+                        else
+                        {
+                            //Debug.WriteLine("what is here");
+                           // Debug.WriteLine(str.Substring(0, match.Index));
+                        }
+                    }*/
+
+            foreach (string item in stringsList)
+            {
+               // Debug.WriteLine(item); //does the job
+            }
+
+
+            // Add the remaining substring to the array
+            Array.Resize(ref strings, strings.Length + 1);
+         //   strings[strings.Length - 1] = str;
+           // Debug.WriteLine($"Added '{str}' to the array.");
+
+            //Debug.WriteLine($"Number of substrings starting with a capital letter after '\\n': {count}");
+            foreach (string s in strings)
+            {
+               // Debug.WriteLine($"Array element: '{s}'");
+            }
+
+
+
+
+            /*            Match match = Regex.Match(str, @"(?<substringBeforeNewLine>.*?)\n(?<charAfterNewLine>.)");
+                        int count = 0;
+                        if (match.Success)
+                        {
+                            char charAfterNewLine = match.Groups["charAfterNewLine"].Value[0];
+                            if (char.IsUpper(charAfterNewLine))
+                            {
+                                string substringBeforeNewLine = match.Groups["substringBeforeNewLine"].Value;
+                                Array.Resize(ref strings, strings.Length + 1); // Resize the array
+                                strings[strings.Length - 1] = substringBeforeNewLine; // Add the substring to the array
+                                Debug.WriteLine($"Added '{substringBeforeNewLine}' to the array.");
+
+                                count++;
+                            }
+                            else
+                            {
+                                str = str.Replace("\n", " ");
+                                Debug.WriteLine($"Replaced '\\n' with ' ' in s1. New s1: '{str}'");
+                            }
+                        }
+                        else
+                        {
+                            Debug.WriteLine("No '\\n' found in the string.");
+                        }*/
+
+            //  Debug.WriteLine($"new s1@@: '{str}'");
+            //Debug.WriteLine($"new strings@@: '{strings}'");
+            Debug.WriteLine($"new strings Length@@: '{strings.Length}'");
+
+
+
+
+
+
+
+
+
             object oEndOfDoc = "\\endofdoc";
             Word.Paragraph oPara;
             object oRng = Document.Bookmarks.get_Item(ref oEndOfDoc).Range;
